@@ -38,12 +38,13 @@ def download(url,name=""):
 
 year = "2013"
 source = "CertifiedList"+year
-baseurl = r"http://www.state.nj.us/treasury/taxation/lpt/MODIV-Counties/{0}/{1}.zip"
+baseurl = r"http://www.state.nj.us/treasury/taxation/lpt/MODIV-Counties/{0}/{1}"+year[-2:]+".zip"
 counties = ["Atlantic", "Bergen", "Burlington", "Camden", "Cape May", "Cumberland", "Essex", "Gloucester", "Hudson", "Hunterdon", "Mercer", "Middlesex", "Monmouth", "Morris", "Ocean", "Passaic", "Salem", "Somerset", "Sussex", "Union", "Warren"]
 ## URL pattern is not consistent across years
 ## for 2013: s/CapeMay/Cape May/
 ## see below for another 2013 kludge
 ## will probably rewrite both once I see how they post 2014's lists
+## dfahey - 2013 URL did not work, maybe NJ moved the files
 
 for county in counties:
 # SQL-ready CSV output:
@@ -85,7 +86,8 @@ for county in counties:
                 "deed-book", "deed-page"]
             firstline = True
             while record:
-                parsed = TaxListParser(record)
+# dfahey - when I run the code, I get and error: TypeError: 'module' object is not callable                
+                parsed = TaxListParser.TaxListParser(record)
                 parsed.source = source
                 if firstline:
 #                    outfile.write( parsed.genCSVheader(outputfields) )
