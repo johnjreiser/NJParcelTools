@@ -56,6 +56,7 @@ for county in counties:
     else:
         ## for 2013: s/county/county+year[-2:]/
         url = baseurl.format(year, county) ## baseurl+county+".zip"
+        print "downloading", county, "..."
         fn = download(url, fn)
         print county, "downloaded."
     if(not os.path.exists(countyfile)):
@@ -71,19 +72,20 @@ for county in counties:
             print "Not sure what to do with these files."
             print "\n".join(names)
         if(os.path.exists(os.path.join(os.getcwd(), modivfn))):
-            print "Processing {}".format(modivfn)
+            print "Processing {}".format(modivfn), "..."
             vals = []
             modiv = open(os.path.join(os.getcwd(),modivfn), "r")
             outfile = open(countyfile, "w")
             record = modiv.readline()
-            outputfields = ["pams_pin", "muncode", "block", "lot", "qual", "property-location", 
-                "property-class", "building-description", "land-description", "calc-acreage", 
-                "additional-lots", "additional-lots2", 
-                "owner-name", "owner-address", "owner-city", "owner-zip", 
-                "sale-date", "sale-price", "sale-assessment", "assessment-code", 
-                "land-value", "improvement-value", "net-value", "net-value-prior-year", 
-                "taxes-last-year", "taxes-current-year", "zoning", "year-constructed", 
-                "deed-book", "deed-page"]
+#dfahey - the output fields had an error, they had dashes instead of underscores            
+            outputfields = ["pams_pin", "muncode", "block", "lot", "qual", "property_location", 
+                "property_class", "building_description", "land_description", "calc_acreage", 
+                "additional_lots", "additional_lots2", 
+                "owner_name", "owner_address", "owner_city", "owner_zip", 
+                "sale_date", "sale_price", "sale_assessment", "assessment_code", 
+                "land_value", "improvement_value", "net_value", "net_value_prior_year", 
+                "taxes_last_year", "taxes_current_year", "zoning", "year_constructed", 
+                "deed_book", "deed_page"]
             firstline = True
             while record:
 # dfahey - when I run the code, I get and error: TypeError: 'module' object is not callable                
@@ -94,6 +96,7 @@ for county in counties:
                     outfile.write(",".join(outputfields)+"\n")
                     firstline = False
 #                print "Processing", parsed.getPAMSpin()
+#                print parsed.genCSVrecord(outputfields)
                 outfile.write( parsed.genCSVrecord(outputfields) )
 ### # code below was to generate Insert statements for MySQL
 #                break
