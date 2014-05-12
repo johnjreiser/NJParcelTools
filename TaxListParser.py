@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # TaxListParser.py - State of New Jersey certified tax list parser
 # 
-# modified: 2013-06-03
+# last modified: 2014-05-09
 # author:   John Reiser <jreiser@njgeo.org>
 # purpose:  parses NJ MOD IV certified task lists from:
 #           http://www.state.nj.us/treasury/taxation/lpt/TaxListSearchPublicWebpage.shtml
@@ -21,17 +21,21 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 # ---------------------------------------------------------------------------
+# 2014-05-09 revisions:
+# - fixed source field, so it can be used in partitioned tables
+# - fixed getField handling of dirty data so erroneous data will not cause an exception
 
 
 import re, datetime
 
 class TaxListParser:
     """convert a fixed-width string from MOD-IV to a dict"""
-    def __init__(self,record):
+    def __init__(self,record,source=None):
         self.record = record
-        self.source = ''
+        if not source == None: 
+            self.source = source
         self.numCheck = re.compile(r'[^\d.]+')
-        """tags is a dict of tuples, with [0] as start, [1] as length, [2] as type ["string","int","date", "float"], [3] as float format"""
+        """tags is a dict of tuples, with [0] as start, [1] as length, [2] as type ["string","int","date","float"], [3] as float format"""
         self.tags = {"muncode": (0,4,0),
                 "block": (4,9,0),
                 "lot": (13,9,0),
@@ -128,6 +132,7 @@ class TaxListParser:
         self.fields = ['pams_pin', 'source']
         self.fields.extend(sorted(self.tags.keys()))
         if(len(self.record) != 701):
+            self.record = self.record.rstrip("\r\n")
             self.record += ("0"*(701-len(self.record)))
         
     def getField(self,field):
@@ -173,6 +178,8 @@ class TaxListParser:
                 else:
                     try:
                         brk = self.tags[field][3].split(".")
+                        if("." in value):
+                            return float(value)
                         value = value[:int(brk[0])] + "." + value[-1*int(brk[1]):]
                         value = self.numCheck.sub("",value)
                         if(len(value) == 1):
@@ -240,30 +247,54 @@ class TaxListParser:
         text += ";\n"
         return text
 
-    def genCSVheader(self, df): # df: desired fields
-        fields = ["pams_pin"]
-        for key in sorted(self.tags.iteritems()):
-            if(key[0] in df):
-                fields.append( key[0] )
+    def genCSVheader(self, df=None): # df: desired fields
+        if(self.source == None):
+            fields = ["pams_pin"]
+        else:
+            fields = ["pams_pin", "source"]
+        if df == None:
+            for key in sorted(self.tags.iteritems()):
+                if(key[0] in df) and (not key[0] in ("pams_pin", "source")):
+                    fields.append( key[0] )
+        else:
+            for key in df:
+                if not key in ("pams_pin", "source"):
+                    fields.append(key)
         return ",".join( fields ) + "\n"
 
     def genCSVrecord(self, fields):
-        pams = self.getPAMSpin()
-        values = ['"{0}"'.format(pams)]        
+        if(self.source == "None"):
+            values = ['"{0}"'.format(  self.getPAMSpin()  )]
+        else:
+            values = ['"{0}"'.format(  self.getPAMSpin()  ), '"{0}"'.format( self.source )]
         for f in fields:
-            if f in self.tags.keys():
-                if(self.tags[f][2] == 0):
-                    values.append( '"{0}"'.format( str(self.getField(f)).replace('"', "'") ) )
-                elif(self.tags[f][2] == 2):
-                    if(self.getField(f) == "0000-00-00"):
-                        values.append( '' )
-                    else: 
-                        values.append( '"{0}"'.format( str(self.getField(f))) )
+            if f in self.fields: ##self.tags.keys():
+                if f in ('pams_pin', 'source'):
+                    pass ## ignore these two special fields, they're handled above
+#                     if f == 'pams_pin':
+#                         values.append( self.getPAMSpin() )
+#                     if f == 'source':
+#                         if(self.source.isdigit()):
+#                             values.append( self.source )
+#                         else:
+#                             values.append( '"{0}"'.format( self.source ) )
                 else:
-                    if self.getField(f) == None:
-                        values.append( '' )
+                    if(self.tags[f][2] == 0):
+                        sv = str(self.getField(f))
+                        sv = sv.replace('"', "'")
+                        sv = sv.replace("\\'", "'")
+                        sv = sv.replace("\\", "/")
+                        values.append( '"{0}"'.format( sv ) )
+                    elif(self.tags[f][2] == 2):
+                        if(self.getField(f) == "0000-00-00"):
+                            values.append( '' )
+                        else: 
+                            values.append( '"{0}"'.format( str(self.getField(f))) )
                     else:
-                        values.append( str( self.getField(f) ).replace('"', "'") )
+                        if self.getField(f) == None:
+                            values.append( '' )
+                        else:
+                            values.append( str( self.getField(f) ).replace('"', "'") )
         return ",".join(values) + "\n"
         
         #### old alphanumerically sorted output below
