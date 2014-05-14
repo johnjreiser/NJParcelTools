@@ -14,10 +14,16 @@ A python script to help you compare .dbf file structures. Helpful when you're tr
 ### DownloadExtractParcels.py
 A python script to download the available spatial and tabular data from NJGIN, New Jersey's spatial data clearinghouse.
 
+### DownloadMODIV.sh
+A shell script to download, extract and convert MOD-IV flat files to CSV. 
+
+### convertMODIVtoCSV.py
+A python script to convert MOD-IV flat files to CSV format. 
+
 ### processCertifiedTaxLists.py
 Downloads, extracts and converts the flat-file assessment rolls to CSV. 
 
 ### TaxListParser.py
 Module to process NJ's Certified Tax Lists in flat-file text format. Can produce CSVs or SQL to import into PostgreSQL or MySQL.
 
-*Last updated 2014-02-09*
+*Last updated 2014-05-14*
