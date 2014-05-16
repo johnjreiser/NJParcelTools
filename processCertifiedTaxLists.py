@@ -21,6 +21,14 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 # ---------------------------------------------------------------------------
+# 200140514 dfahey@alumni.nd.edu Added command line arguments of year to process 
+# and destination directory 
+#
+# usage: ./processCertifiedTaxLists.py [2009-2013] [destination directory] [--outputall]
+# example: ./processCertifiedTaxLists.py 2009 OutputFor2009 --outputall
+# if no arguments are supplied, the defaults of 2013, ./TMP/ and abbreviated output
+# will be assumed
+# ---------------------------------------------------------------------------
 
 import TaxListParser
 import zipfile, urllib, os, re, sys, datetime #, MySQLdb, time
@@ -36,59 +44,106 @@ def download(url,name=""):
     localFile.close()
     return fname
 
-year = "2013"
-source = "CertifiedList"+year
-baseurl = r"http://www.state.nj.us/treasury/taxation/lpt/MODIV-Counties/{0}/{1}"+year[-2:]+".zip"
 counties = ["Atlantic", "Bergen", "Burlington", "Camden", "Cape May", "Cumberland", "Essex", "Gloucester", "Hudson", "Hunterdon", "Mercer", "Middlesex", "Monmouth", "Morris", "Ocean", "Passaic", "Salem", "Somerset", "Sussex", "Union", "Warren"]
+
 ## URL pattern is not consistent across years
 ## for 2013: s/CapeMay/Cape May/
 ## see below for another 2013 kludge
 ## will probably rewrite both once I see how they post 2014's lists
-## dfahey - 2013 URL did not work, maybe NJ moved the files
+baseurl = r"http://www.state.nj.us/treasury/taxation/lpt/MODIV-Counties/{0}/{1}"
+
+if (len(sys.argv) == 1 or sys.argv[1] == "2013"):
+    year = "2013"
+    baseurl = baseurl+year[-2:]+".zip"
+elif (sys.argv[1] in ["2009", "2010", "2011", "2012"]):
+    year = sys.argv[1]
+    baseurl = baseurl+".zip"
+    counties[4] = "CapeMay"
+else:
+    print "invalid argument: input a year between 2009 and 2013"
+    exit(0)        
+    
+source = "CertifiedList"+year
+if(len(sys.argv) < 3):
+    #default Output directory is CWD/TMP/
+    outputdir = os.path.join(os.getcwd(),"TMP/")
+else:
+    outputdir = os.path.join(os.getcwd(),sys.argv[2])
+
+if(len(sys.argv) < 4):
+    #default output fields
+    outputfields = ["pams_pin", "muncode", "block", "lot", "qual", "property_location", 
+        "property_class", "building_description", "land_description", "calc_acreage", 
+        "additional_lots", "additional_lots2", 
+        "owner_name", "owner_address", "owner_city", "owner_zip", 
+        "sale_date", "sale_price", "sale_assessment", "assessment_code", 
+        "land_value", "improvement_value", "net_value", "net_value_prior_year", 
+        "taxes_last_year", "taxes_current_year", "zoning", "year_constructed", 
+        "deed_book", "deed_page"]
+elif(sys.argv[3] == "--outputall"):
+    outputfields = ["pams_pin", "muncode", "block", "lot", "qual", "transaction_date", 
+        "transaction_update_number", "tax_account_number", "property_class", "property_location", 
+        "building_description", "land_description", "calc_acreage", "additional_lots", "additional_lots2", 
+        "zoning", "tax_map_number", "owner_name", "owner_address", "owner_city", "owner_zip", 
+        "number_of_owners", "deduction", "bank_code", "mortgage_account_number", "deed_book", 
+        "deed_page", "sales_price_code", "sale_date", "sale_price", "sale_assessment", "sale_sr1a", 
+        "rebate_ssn", "rebate_spouse", "rebate_number_dwellings", "rebate_number_commercial", 
+        "rebate_multiple_occupancy", "rebate_percent_owned", "rebate_code", "rebate_delinquent", 
+        "exempt_own", "exempt_use", "exempt_desc", "exempt_initial_date", "exempt_further_date", 
+        "exempt_statute", "exempt_facility", "building_class", "year_constructed", "assessment_code", 
+        "land_value", "improvement_value", "net_value", "tax_code_1", "tax_code_2", "tax_code_3", 
+        "tax_code_4", "exemption_1_code", "exemption_1_amt", "exemption_2_code", "exemption_2_amt", 
+        "exemption_3_code", "exemption_3_amt", "exemption_4_code", "exemption_4_amt", "deduction_senior", 
+        "deduction_veteran", "deduction_widow", "deduction_surv_spouse", "deduction_disabled", 
+        "user_field_1", "user_field_2", "old_property_id", "census_tract", "census_block", 
+        "property_use_code", "property_flags", "tenant_response", "tenant_base_year", 
+        "tenant_base_tax", "tenant_base_net_val", "taxes_last_year", "taxes_current_year", 
+        "non_municipal_half1", "non_municipal_half2", "municipal_half1", "municipal_half2", 
+        "non_municipal_half3", "municipal_half3", "bill_status_flag", "tax_estimated_qtr3", 
+        "net_value_prior_year", "statement_aid_amt"]
+
 
 for county in counties:
 # SQL-ready CSV output:
-    countyfile = os.path.join(os.getcwd(),county+".csv")
-# Downloaded ZIP file name
-    fn = os.path.join(os.getcwd(), county+"-"+year+".zip")
+    countyfile = os.path.join(outputdir,county+".csv")
+    if(not os.path.exists(outputdir)):
+       os.makedirs(outputdir)
+# Download ZIP file name
+    fn = os.path.join(outputdir, county+"-"+year[-2:]+".zip")
     if(os.path.exists(fn)):
-        print county, "zip file already downloaded."
+        print county, "ZIP file already downloaded."
     else:
         ## for 2013: s/county/county+year[-2:]/
         url = baseurl.format(year, county) ## baseurl+county+".zip"
         print "downloading", county, "..."
         fn = download(url, fn)
         print county, "downloaded."
+# Extract ZIP file
     if(not os.path.exists(countyfile)):
+###        print "here1",fn
         zipf = zipfile.ZipFile(fn, "r")
         names = zipf.namelist()
         modivfn = county+year[-2:]+".txt"
+###        print "modivfn:",modivfn
+        
         if(len(names)==1):
-            outz = open(names[0], "wb")
+###           print "zipfile:",os.path.join(outputdir,names[0])
+            outz = open(os.path.join(outputdir,names[0]), "wb")
             outz.write(zipf.read(names[0]))
             outz.close()
             modivfn = names[0]
         else:
             print "Not sure what to do with these files."
             print "\n".join(names)
-        if(os.path.exists(os.path.join(os.getcwd(), modivfn))):
+        if(os.path.exists(os.path.join(outputdir, modivfn))):
             print "Processing {}".format(modivfn), "..."
             vals = []
-            modiv = open(os.path.join(os.getcwd(),modivfn), "r")
+            modiv = open(os.path.join(outputdir,modivfn), "r")
             outfile = open(countyfile, "w")
-            record = modiv.readline()
-#dfahey - the output fields had an error, they had dashes instead of underscores            
-            outputfields = ["pams_pin", "muncode", "block", "lot", "qual", "property_location", 
-                "property_class", "building_description", "land_description", "calc_acreage", 
-                "additional_lots", "additional_lots2", 
-                "owner_name", "owner_address", "owner_city", "owner_zip", 
-                "sale_date", "sale_price", "sale_assessment", "assessment_code", 
-                "land_value", "improvement_value", "net_value", "net_value_prior_year", 
-                "taxes_last_year", "taxes_current_year", "zoning", "year_constructed", 
-                "deed_book", "deed_page"]
+            record = modiv.readline()          
             firstline = True
             while record:
-# dfahey - when I run the code, I get and error: TypeError: 'module' object is not callable                
+# Process MODIV flat file record            
                 parsed = TaxListParser.TaxListParser(record)
                 parsed.source = source
                 if firstline:
