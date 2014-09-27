@@ -36,7 +36,9 @@ baseurls = {'parcels': r"http://njgin.state.nj.us/download2/parcels/parcels_mdb_
 ## to grab NJGIN's copy of MODIV (assessment) data, comment out above and uncomment below.
 #baseurls = {'parcels': r"http://njgin.state.nj.us/download2/parcels/parcels_mdb_{COUNTY}.zip", 'taxlist': "http://njgin.state.nj.us/download2/parcels/parcels_taxlist_{COUNTY}.zip"}
 
-counties = ["Atlantic", "Bergen", "Burlington", "Camden", "CapeMay", "Cumberland", "Gloucester", "Hudson", "Hunterdon", "Mercer", "Monmouth", "Morris", "Ocean", "Passaic", "Salem", "Somerset", "Sussex", "Union", "Warren"]
+
+# Middlesex added 2014-09-26, Essex still in "preliminary" phase
+counties = ["Atlantic", "Bergen", "Burlington", "Camden", "CapeMay", "Cumberland", "Gloucester", "Hudson", "Hunterdon", "Mercer", "Middlesex", "Monmouth", "Morris", "Ocean", "Passaic", "Salem", "Somerset", "Sussex", "Union", "Warren"]
 for dt in baseurls.keys():
     for county in counties:
         url = baseurls[dt].replace("{COUNTY}", county)
