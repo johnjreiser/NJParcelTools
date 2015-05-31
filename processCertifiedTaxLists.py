@@ -21,7 +21,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 # ---------------------------------------------------------------------------
-# 200140514 dfahey@alumni.nd.edu Added command line arguments of year to process 
+# 20140514 dfahey@alumni.nd.edu Added command line arguments of year to process 
 # and destination directory 
 #
 # usage: ./processCertifiedTaxLists.py [2009-2013] [destination directory] [--outputall]
@@ -52,18 +52,18 @@ counties = ["Atlantic", "Bergen", "Burlington", "Camden", "Cape May", "Cumberlan
 ## will probably rewrite both once I see how they post 2014's lists
 baseurl = r"http://www.state.nj.us/treasury/taxation/lpt/MODIV-Counties/{0}/{1}"
 
-if (len(sys.argv) == 1 or sys.argv[1] == "2013"):
-    year = "2013"
+if (len(sys.argv) == 1 or sys.argv[1] in ("2013", "2014", "2015")):
+    year = sys.argv[1]
+    counties[4] = "CapeMay"
     baseurl = baseurl+year[-2:]+".zip"
 elif (sys.argv[1] in ["2009", "2010", "2011", "2012"]):
     year = sys.argv[1]
     baseurl = baseurl+".zip"
-    counties[4] = "CapeMay"
 else:
     print "invalid argument: input a year between 2009 and 2013"
     exit(0)        
     
-source = "CertifiedList"+year
+source = year
 if(len(sys.argv) < 3):
     #default Output directory is CWD/TMP/
     outputdir = os.path.join(os.getcwd(),"TMP/")
