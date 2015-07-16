@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # TaxListParser.py - State of New Jersey certified tax list parser
 # 
-# last modified: 2014-05-09
+# modified: 2015-07-15
 # author:   John Reiser <jreiser@njgeo.org>
 # purpose:  parses NJ MOD IV certified task lists from:
 #           http://www.state.nj.us/treasury/taxation/lpt/TaxListSearchPublicWebpage.shtml
@@ -21,6 +21,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 # ---------------------------------------------------------------------------
+# 2015-07-15 revisions:
+# - better error handling, moved hardcoded year prefix check out to 2021
 # 2014-05-09 revisions:
 # - fixed source field, so it can be used in partitioned tables
 # - fixed getField handling of dirty data so erroneous data will not cause an exception
@@ -142,6 +144,8 @@ class TaxListParser:
             value = self.record[stri:endi].strip()
             if(field == "block" or field == "lot"):
                 zeroStrip = re.compile(r'^[0]*(\w+$)') # this is a kludge and should probably be rewritten to match two groups of out the "00000SS00" format for decimalized blocks and lots
+                if(value.isalpha()):
+                    return value
                 if(len(value) == 5):
                     return zeroStrip.sub(r'\1', value)
                 #    return str(int(value)) # drop padded zeroes
@@ -164,7 +168,7 @@ class TaxListParser:
                     if(value == '000000' or value == '      '):
                         return '0000-00-00'
                     else:
-                        if(int(value[-2:]) > 13):
+                        if(int(value[-2:]) > 20): # last two digits
                             ds = "19%s-%s-%s" % (value[-2:],value[:2],value[2:4])
                         else:
                             ds = "20%s-%s-%s" % (value[-2:],value[:2],value[2:4])
@@ -284,6 +288,7 @@ class TaxListParser:
                         sv = sv.replace('"', "'")
                         sv = sv.replace("\\'", "'")
                         sv = sv.replace("\\", "/")
+                        sv = sv.replace("//", "/")
                         values.append( '"{0}"'.format( sv ) )
                     elif(self.tags[f][2] == 2):
                         if(self.getField(f) == "0000-00-00"):
