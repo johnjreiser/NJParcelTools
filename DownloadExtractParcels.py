@@ -31,14 +31,14 @@ def download(url,name=""):
     webFile.close()
     localFile.close()
     return fname
-    
+
 baseurls = {'parcels': r"http://njgin.state.nj.us/download2/parcels/parcels_mdb_{COUNTY}.zip" }
 ## to grab NJGIN's copy of MODIV (assessment) data, comment out above and uncomment below.
 #baseurls = {'parcels': r"http://njgin.state.nj.us/download2/parcels/parcels_mdb_{COUNTY}.zip", 'taxlist': "http://njgin.state.nj.us/download2/parcels/parcels_taxlist_{COUNTY}.zip"}
 
 
 # Middlesex added 2014-09-26, Essex still in "preliminary" phase
-counties = ["Atlantic", "Bergen", "Burlington", "Camden", "CapeMay", "Cumberland", "Gloucester", "Hudson", "Hunterdon", "Mercer", "Middlesex", "Monmouth", "Morris", "Ocean", "Passaic", "Salem", "Somerset", "Sussex", "Union", "Warren"]
+counties = ["Atlantic", "Bergen", "Burlington", "Camden", "CapeMay", "Cumberland", "Essex", "Gloucester", "Hudson", "Hunterdon", "Mercer", "Middlesex", "Monmouth", "Morris", "Ocean", "Passaic", "Salem", "Somerset", "Sussex", "Union", "Warren"]
 for dt in baseurls.keys():
     for county in counties:
         url = baseurls[dt].replace("{COUNTY}", county)
@@ -59,4 +59,4 @@ for dt in baseurls.keys():
                 print county, dt, "extracted."
             else:
                 print dt+names[0], "already exists. Skipped."
- 
+
