@@ -7,6 +7,7 @@
 import os, re, sys, datetime
 import SR1AParser
 
+
 outputfields = ["pams_pin", "property_location", "u_n_type", "sr_nu_code", "last_update_date",
     "reported_sales_price", "verified_sales_price", "assessed_value_land", "assessed_value_bldg",
     "assessed_value_total", "sales_ratio", "realty_transfer_fee", "serial_number",
@@ -26,10 +27,13 @@ else:
 if fn == "schema":
     print p("").genCreateTablePG("SR1A", outputfields)
 else:
-    if not outputfields == None:
-        print ",".join(outputfields)
-    else:
-        print ",".join(p("").fields)
+# dont print the field names in first record
+# modified by Anthony Townsend 16 Jan 2016
+#
+#    if not outputfields == None:
+#        print ",".join(outputfields)
+#    else:
+#        print ",".join(p("").fields)
     if(os.path.exists(fn)):
         with open(fn, "r") as sr1a:
             line = sr1a.readline().rstrip("\n")
