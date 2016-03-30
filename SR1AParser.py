@@ -141,7 +141,7 @@ class SR1AParser:
                             else:
                                 ds = "20%s-%s-%s" % (value[-2:],value[:2],value[2:4])
                         if(self.tags[field][3] == "YYMMDD"):
-                            if(int(value[:2]) > 15):
+                            if(int(value[:2]) > 32):
                                 ds = "19%s-%s-%s" % (value[:2],value[2:4],value[-2:])
                             else:
                                 ds = "20%s-%s-%s" % (value[:2],value[2:4],value[-2:])
