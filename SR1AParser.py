@@ -136,7 +136,7 @@ class SR1AParser:
                         return '0000-00-00'
                     else:
                         if(self.tags[field][3] == "MMDDYY"):
-                            if(int(value[-2:]) > 15):
+                            if(int(value[-2:]) > 32):
                                 ds = "19%s-%s-%s" % (value[-2:],value[:2],value[2:4])
                             else:
                                 ds = "20%s-%s-%s" % (value[-2:],value[:2],value[2:4])
