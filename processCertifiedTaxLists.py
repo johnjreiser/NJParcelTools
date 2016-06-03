@@ -1,7 +1,7 @@
 #!/usr/bin/python2.7
 # processCertifiedTaxLists.py - State of New Jersey certified tax list processing tool
 # 
-# modified: 2013-06-03
+# modified: 2016-06-02
 # author:   John Reiser <jreiser@njgeo.org>
 # purpose:  parses NJ MOD IV certified task lists from:
 #           http://www.state.nj.us/treasury/taxation/lpt/TaxListSearchPublicWebpage.shtml
@@ -52,7 +52,7 @@ counties = ["Atlantic", "Bergen", "Burlington", "Camden", "Cape May", "Cumberlan
 ## will probably rewrite both once I see how they post 2014's lists
 baseurl = r"http://www.state.nj.us/treasury/taxation/lpt/MODIV-Counties/{0}/{1}"
 
-if (len(sys.argv) == 1 or sys.argv[1] in ("2013", "2014", "2015")):
+if (len(sys.argv) == 1 or sys.argv[1] in ("2013", "2014", "2015", "2016")):
     year = sys.argv[1]
     counties[4] = "CapeMay"
     baseurl = baseurl+year[-2:]+".zip"
@@ -68,7 +68,7 @@ if(len(sys.argv) < 3):
     #default Output directory is CWD/TMP/
     outputdir = os.path.join(os.getcwd(),"TMP/")
 else:
-    outputdir = os.path.join(os.getcwd(),sys.argv[2])
+    outputdir = sys.argv[2]
 
 if(len(sys.argv) < 4):
     #default output fields
@@ -79,7 +79,7 @@ if(len(sys.argv) < 4):
         "sale_date", "sale_price", "sale_assessment", "assessment_code", 
         "land_value", "improvement_value", "net_value", "net_value_prior_year", 
         "taxes_last_year", "taxes_current_year", "zoning", "year_constructed", 
-        "deed_book", "deed_page"]
+        "deed_book", "deed_page", "old_property_id"]
 elif(sys.argv[3] == "--outputall"):
     outputfields = ["pams_pin", "muncode", "block", "lot", "qual", "transaction_date", 
         "transaction_update_number", "tax_account_number", "property_class", "property_location", 
@@ -120,21 +120,20 @@ for county in counties:
         print county, "downloaded."
 # Extract ZIP file
     if(not os.path.exists(countyfile)):
-###        print "here1",fn
-        zipf = zipfile.ZipFile(fn, "r")
-        names = zipf.namelist()
         modivfn = county+year[-2:]+".txt"
-###        print "modivfn:",modivfn
-        
-        if(len(names)==1):
+        if not (os.path.exists(os.path.join(outputdir,modivfn))): 
+            zipf = zipfile.ZipFile(fn, "r")
+            names = zipf.namelist()
+            if(len(names)==1):
 ###           print "zipfile:",os.path.join(outputdir,names[0])
-            outz = open(os.path.join(outputdir,names[0]), "wb")
-            outz.write(zipf.read(names[0]))
-            outz.close()
-            modivfn = names[0]
-        else:
-            print "Not sure what to do with these files."
-            print "\n".join(names)
+                outz = open(os.path.join(outputdir,names[0]), "wb")
+                outz.write(zipf.read(names[0]))
+                outz.close()
+                modivfn = names[0]
+            else:
+                print "Not sure what to do with these files."
+                print "\n".join(names)
+
         if(os.path.exists(os.path.join(outputdir, modivfn))):
             print "Processing {}".format(modivfn), "..."
             vals = []
