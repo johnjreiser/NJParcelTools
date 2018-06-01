@@ -140,47 +140,16 @@ for county in counties:
             modiv = open(os.path.join(outputdir,modivfn), "r")
             outfile = open(countyfile, "w")
             record = modiv.readline()          
-            firstline = True
-            while record:
-# Process MODIV flat file record            
-                parsed = TaxListParser.TaxListParser(record)
-                parsed.source = source
-                if firstline:
-#                    outfile.write( parsed.genCSVheader(outputfields) )
+            for lineno, record in enumerate(modiv, start=1):
+# Process MODIV flat file record
+                if lineno == 1:
                     outfile.write(",".join(outputfields)+"\n")
-                    firstline = False
-#                print "Processing", parsed.getPAMSpin()
-#                print parsed.genCSVrecord(outputfields)
-                outfile.write( parsed.genCSVrecord(outputfields) )
-### # code below was to generate Insert statements for MySQL
-#                break
-#            if(skipping == 1):
-#                if(parsed.getPAMSpin() == skipuntil):
-#                    skipping = 0
-#                else:
-#                    print "Skipping", parsed.getPAMSpin()
-#            if(skipping == 0):
-#                print "Loading", parsed.getPAMSpin()
-#                try:
-###                    sql = parsed.genInsertMySQL("taxlist", source)
-#                    vals.append(parsed.getAllFieldsTuple())
-#                except:
-#                    print parsed.record
-#                    raise
-#                try:
-#                    if(len(vals) == 50):
-#                        cursor.executemany(parsed.genExecuteManyInsert("taxlist"), vals)
-#                        vals = []
-###                        time.sleep(60)
-###                        sys.exit(0)
-###                    cursor.execute(sql)
-#                    # should probably refactor code to take advantage of executemany using the string formatting method
-#                    # see: http://mysql-python.sourceforge.net/MySQLdb.html
-#                except:
-#                    print parsed.record
-#                    print vals
-#                    raise
-                record = modiv.readline()
+                try:
+              	    parsed = TaxListParser.TaxListParser(record)
+                    parsed.source = source
+                    outfile.write( parsed.genCSVrecord(outputfields) )
+                except:
+                    print 'Error on line {0}'.format(lineno)
             outfile.close()
             print "{} complete.".format(county)
         else:
