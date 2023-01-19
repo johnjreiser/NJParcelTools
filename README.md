@@ -8,10 +8,10 @@ All code within this repository is licensed under the GPL, version 3. This is a 
 Contributions to this repository are welcome and encouraged. Feel free to improve the code and submit a pull request. 
 
 ## About New Jersey's Cadastral Data
-- GIS data available from [NJGIN](https://njgin.state.nj.us/NJ_NJGINExplorer/IW.jsp?DLayer=Parcels%20by%20County/Muni)
-- Assessment Rolls available from [NJ Division of Taxation](http://www.state.nj.us/treasury/taxation/lpt/TaxListSearchPublicWebpage.shtml)
-- [MOD IV Manual](http://www.state.nj.us/treasury/taxation/pdf/lpt/modIVmanual.pdf) - manual on how to use NJ's assessment rolls.
-- [Sales Records](http://www.state.nj.us/treasury/taxation/lpt/grantors_listing.shtml), known as the "Grantor's Listing" or SR1A are also available.
+- GIS data available from [NJGIN](https://njgin.nj.gov/njgin/edata/parcels/)
+- Assessment Rolls available from [NJ Division of Taxation](http://www.state.nj.us/treasury/taxation/) via [OPRA](https://nj.gov/opra) request
+- [MOD IV Manual](http://www.state.nj.us/treasury/taxation/pdf/lpt/modIVmanual.pdf) - manual on how to use NJ's assessment rolls
+- [Sales Records](https://www.nj.gov/treasury/taxation/lpt/statdata.shtml), known as the "Grantor's Listing" or **SR1A** are also available
 
 ## Tools in this Repository
 ### dbfSchemaCompare.py
@@ -38,4 +38,4 @@ Similar to the TaxListParser above, this will process the SR1A files allowing yo
 ### sr1a_csv.py 
 Quick and dirty script to dump an SR1A file to standard output. 
 
-*Last updated 2015-12-05*
+*Last updated 2023-01-19*
