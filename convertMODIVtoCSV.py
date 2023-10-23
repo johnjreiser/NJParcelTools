@@ -1,8 +1,8 @@
-#!/usr/bin/python2.7
+#!/usr/bin/env python
 # convertMODIVtoCSV.py
 # author:  John Reiser <jreiser@njgeo.org>
 # purpose: converts a NJ Certified Tax List to CSV for loading into a database
-# license: Copyright (C) 2014, John Reiser
+# license: Copyright (C) 2014, 2023 John Reiser
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,15 +18,15 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 # ---------------------------------------------------------------------------
 # RELEASE NOTES
-# Usage: 
+# Usage:
 # $ convertMODIVtoCSV.py input.txt output.csv [source_text]
-# An input MOD-IV flat file will be processed and exported to CSV. The contents of a 
+# An input MOD-IV flat file will be processed and exported to CSV. The contents of a
 # source field can be optionally specified to add an additional text column to the output.
-# - OR - 
+# - OR -
 # $ convertMODIVtoCSV.py schema
-# Prints PostgreSQL friendly CREATE TABLE query. Can be used as the main table for a 
-# partition scheme. Use the "source" above to populate a field that can be used in the 
-# partitioned tables. 
+# Prints PostgreSQL friendly CREATE TABLE query. Can be used as the main table for a
+# partition scheme. Use the "source" above to populate a field that can be used in the
+# partitioned tables.
 #
 # This initial public release r01 incorporates several fixes that were required when
 # processing historic MOD-IV tables. If you haven't worked with MOD-IV before, be prepared
@@ -36,24 +36,48 @@
 from TaxListParser import TaxListParser
 import os, sys, re, datetime, traceback
 
-outputfields = ["pams_pin", "muncode", "block", "lot", "qual", "property_location", 
-	"property_class", "building_description", "land_description", "calc_acreage", 
-	"additional_lots", "additional_lots2", 
-	"owner_name", "owner_address", "owner_city", "owner_zip", 
-	"sale_date", "sale_price", "sale_assessment", "assessment_code", 
-	"land_value", "improvement_value", "net_value", "net_value_prior_year", 
-	"taxes_last_year", "taxes_current_year", "zoning", "year_constructed", 
-	"deed_book", "deed_page"]
+outputfields = [
+    "pams_pin",
+    "muncode",
+    "block",
+    "lot",
+    "qual",
+    "property_location",
+    "property_class",
+    "building_description",
+    "land_description",
+    "calc_acreage",
+    "additional_lots",
+    "additional_lots2",
+    "owner_name",
+    "owner_address",
+    "owner_city",
+    "owner_zip",
+    "sale_date",
+    "sale_price",
+    "sale_assessment",
+    "assessment_code",
+    "land_value",
+    "improvement_value",
+    "net_value",
+    "net_value_prior_year",
+    "taxes_last_year",
+    "taxes_current_year",
+    "zoning",
+    "year_constructed",
+    "deed_book",
+    "deed_page",
+]
 
 fi = sys.argv[1]
 if fi == "schema":
-    print TaxListParser("").genCreateTablePG("table_name", outputfields)
+    print(TaxListParser("").genCreateTablePG("table_name", outputfields))
     sys.exit(0)
 
-fo = sys.argv[2]    
+fo = sys.argv[2]
 
 source = None
-if(len(sys.argv) == 4):
+if len(sys.argv) == 4:
     source = sys.argv[3]
     outputfields.extend(["source"])
 
@@ -64,18 +88,18 @@ with open(fi, "r") as fh:
     with open(fo, "w") as outfile:
         try:
             while record:
-                if(source == None):
+                if source == None:
                     parsed = TaxListParser(record)
                 else:
-                    parsed = TaxListParser(record, source)                
+                    parsed = TaxListParser(record, source)
                 if firstline:
                     # outfile.write(",".join(outputfields)+"\n")
-                    outfile.write( parsed.genCSVheader(outputfields) )
+                    outfile.write(parsed.genCSVheader(outputfields))
                     firstline = False
-                outfile.write( parsed.genCSVrecord(outputfields) )        
+                outfile.write(parsed.genCSVrecord(outputfields))
                 record = fh.readline()
                 rc = rc + 1
         except Exception as e:
-            print e
-            print traceback.format_exc()
-            print rc
+            print(e)
+            print(traceback.format_exc())
+            print(rc)

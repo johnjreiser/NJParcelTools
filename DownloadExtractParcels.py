@@ -19,12 +19,18 @@
 #
 # ---------------------------------------------------------------------------
 
-import urllib, os, sys, zipfile
+#############################################################
+# Deprecation Notice
+# NJ has moved to providing this data in a Statewide format
+# https://njogis-newjersey.opendata.arcgis.com/documents/newjersey::parcels-composite-of-nj-download/about
+#############################################################
+
+import urllib.request, urllib.parse, urllib.error, os, sys, zipfile
 
 def download(url,name=""):
     if(name == ""):
         name = url.split('/')[-1]
-    webFile = urllib.urlopen(url)
+    webFile = urllib.request.urlopen(url)
     localFile = open(name, 'w')
     fname = localFile.name
     localFile.write(webFile.read())
@@ -37,17 +43,16 @@ baseurls = {'parcels': r"http://njgin.state.nj.us/download2/parcels/parcels_mdb_
 #baseurls = {'parcels': r"http://njgin.state.nj.us/download2/parcels/parcels_mdb_{COUNTY}.zip", 'taxlist': "http://njgin.state.nj.us/download2/parcels/parcels_taxlist_{COUNTY}.zip"}
 
 
-# Middlesex added 2014-09-26, Essex still in "preliminary" phase
 counties = ["Atlantic", "Bergen", "Burlington", "Camden", "CapeMay", "Cumberland", "Essex", "Gloucester", "Hudson", "Hunterdon", "Mercer", "Middlesex", "Monmouth", "Morris", "Ocean", "Passaic", "Salem", "Somerset", "Sussex", "Union", "Warren"]
-for dt in baseurls.keys():
+for dt in list(baseurls.keys()):
     for county in counties:
         url = baseurls[dt].replace("{COUNTY}", county)
         fn = url.split('/')[-1]
         if(os.path.exists(fn)):
-            print county, dt, "zip file already downloaded."
+            print(county, dt, "zip file already downloaded.")
         else:
             fn = download(url)
-            print county, "downloaded."
+            print(county, "downloaded.")
 
         zipf = zipfile.ZipFile(fn, "r")
         names = zipf.namelist()
@@ -56,7 +61,7 @@ for dt in baseurls.keys():
                 outz = open(dt+names[0], "wb")
                 outz.write(zipf.read(names[0]))
                 outz.close()
-                print county, dt, "extracted."
+                print(county, dt, "extracted.")
             else:
-                print dt+names[0], "already exists. Skipped."
+                print(dt+names[0], "already exists. Skipped.")
 
