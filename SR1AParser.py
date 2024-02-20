@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/env python
 # SR1AParser - State of New Jersey Grantor's Listing (SR1A) parser
 # parses the SR1A files from:
 # http://www.state.nj.us/treasury/taxation/lpt/grantors_listing.shtml
@@ -162,9 +162,9 @@ class SR1AParser:
                         else:
                             return float(value)
                     except:
-                        print "record length:",len(self.record)
-                        print "value:",value
-                        print "break:",brk
+                        print("record length:",len(self.record))
+                        print("value:",value)
+                        print("break:",brk)
                         raise
             else:
                 return value.replace("\\", r"\\").replace("'","\\'")
@@ -186,7 +186,7 @@ class SR1AParser:
             else:
                 return "_".join([mun, block, lot, qual])
         except:
-            print self.record
+            print(self.record)
             raise
     def genCreateTableMySQL(self, tablename, fields=None):
         text = "CREATE TABLE `" + tablename + "` ( `recordid` INT NOT NULL UNSIGNED AUTO_INCREMENT, \n" + \
@@ -197,7 +197,7 @@ class SR1AParser:
         if(fields != None):
             keysource = []
             for f in fields:
-                if f in self.tags.keys():
+                if f in list(self.tags.keys()):
                     keysource.append( [f, self.tags[f]] )
         else:
             keysource = self.fields # sorted(self.tags.iteritems())
@@ -218,7 +218,7 @@ class SR1AParser:
         self.source = source
         pams = self.getPAMSpin()
         text = "INSERT INTO %s SET `pams_pin` = '%s', `source` = '%s', " % (table, pams, source)
-        for key in sorted(self.tags.iteritems()):
+        for key in sorted(self.tags.items()):
             if(key[1][2] == 1 or key[1][2] == 2):
                 text += "`%s` = %s, " % (key[0], self.getField(key[0]))
             else:
@@ -228,7 +228,7 @@ class SR1AParser:
         return text
     def genCSVheader(self, df): # df: desired fields
         fields = ["pams_pin"]
-        for key in sorted(self.tags.iteritems()):
+        for key in sorted(self.tags.items()):
             if(key[0] in df):
                 fields.append( key[0] )
         return ",".join( fields ) + "\n"
@@ -238,7 +238,7 @@ class SR1AParser:
         if fields == None:
             fields = self.fields
         for f in fields:
-            if f in self.tags.keys():
+            if f in list(self.tags.keys()):
                 if(self.tags[f][2] == 0):
                     values.append( '"{0}"'.format( str(self.getField(f)).replace('"', "'").replace(r"\'", "'").replace(r"\\", "\\") ) )
                 elif(self.tags[f][2] == 2):
@@ -257,7 +257,7 @@ class SR1AParser:
     def genCSVrecordAlpha(self, fields):
         pams = self.getPAMSpin()
         values = ['"{0}"'.format(pams)]
-        for key in sorted(self.tags.iteritems()):
+        for key in sorted(self.tags.items()):
             if(key[0] in fields):
                 if(key[1][2] == 0):
                     values.append( '"{0}"'.format( str(self.getField(key[0])) ) )
@@ -282,10 +282,10 @@ class SR1AParser:
         if(fields != None):
             keysource = []
             for f in fields:
-                if f in self.tags.keys():
+                if f in list(self.tags.keys()):
                     keysource.append( [f, self.tags[f]] )
         else:
-            keysource = sorted(self.tags.iteritems())
+            keysource = sorted(self.tags.items())
         for key in keysource:
             if(key[1][2] == 0):
                 text += "%s VARCHAR(%s),\n" % (key[0].replace("-","_"),str(key[1][1]))
@@ -312,7 +312,7 @@ class SR1AParser:
         return fs
     def genExecuteManyInsert(self, tablename):
         sql = r"INSERT INTO " + tablename + " ("
-        sql += ", ".join(map(lambda x: "`%s`"%x,self.fields)) # map/lambda to wrap keys in MySQL field delimiters
+        sql += ", ".join(["`%s`"%x for x in self.fields]) # map/lambda to wrap keys in MySQL field delimiters
         sql += ") VALUES (" + (r" %s,"*len(self.fields))[:-1]
         sql += ")"
         return sql
@@ -322,7 +322,7 @@ class SR1AParser:
         try:
             result = datetime.strptime(datestr, format)
             dateOk = (datestr == result.strftime(format)) # this makes sure the parsed date matches the original string
-        except Exception, e:
+        except Exception as e:
             pass
 #            print str(e)
         if dateOk:
