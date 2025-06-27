@@ -18,25 +18,28 @@ def _coerce(value: str, to_type: Type, meta: dict = {}) -> Any:
             year_prefix = 2000
             if value == "000000":
                 return ""  # for backwards/database compatibility
+            first, second, third = (int(value[:2]), int(value[2:4]), int(value[-2:]))
             if meta["datefmt"] == "YYMMDD":
-                if int(value[:2]) >= date_threshold:
+                if second > 12 or third > 31: # month or day is out of bound
+                    # assume then that it's MMDDYY because there's data consistencies everywhere
+                    # year, month, day   ->  year, month, day 
+                    first, second, third = (third, first, second)
+                if first >= date_threshold:
                     year_prefix = 1900
                 return date(
-                    year_prefix + int(value[:2]), int(value[2:4]), int(value[-2:])
+                    year_prefix + first, second, third
                 )
             elif meta["datefmt"] == "MMDDYY":
-                if int(value[-2:]) >= date_threshold:
+                if third >= date_threshold:
                     year_prefix = 1900
                 return date(
-                    year_prefix + int(value[-2:]),
-                    int(value[:2]),
-                    int(value[2:4]),
+                    year_prefix + third,
+                    first,
+                    second,
                 )
         else:
             return to_type(value)
     except (ValueError, TypeError, InvalidOperation) as e:
-        #print(e)
-        print(meta, value)
         return value  # fallback to original string if coercion fails
 
 
