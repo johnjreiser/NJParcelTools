@@ -42,6 +42,7 @@ Example workflow to get the latest SR1A and process it for importing into Postgr
     Archive:  YTDSR1A2025.zip
       inflating: YTDSR1A2025.txt
     $ python3 njparceltools.py sr1a YTDSR1A2025.txt ytd.csv
+    $ psql -c "\copy sr1a from './ytd.csv' with csv header" njdb
 
 ## Deprecated Tools in this Repository
 
