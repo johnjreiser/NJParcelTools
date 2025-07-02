@@ -1,6 +1,5 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from decimal import Decimal
-
 
 @dataclass
 class MODIVRecord:
@@ -9,7 +8,7 @@ class MODIVRecord:
     lot: str = field(metadata={"start": 13, "len": 9})
     qual: str = field(metadata={"start": 22, "len": 11})
     transaction_date: str = field(
-        metadata={"start": 37, "len": 6, "datefmt": "YYMMDD"}
+        metadata={"start": 37, "len": 6, "datefmt": "MMDDYY"}
     )  # , 2)
     transaction_update_number: int = field(metadata={"start": 43, "len": 4})  # , 1)
     tax_account_number: str = field(metadata={"start": 47, "len": 8})
@@ -18,7 +17,7 @@ class MODIVRecord:
     building_description: str = field(metadata={"start": 83, "len": 15})
     land_description: str = field(metadata={"start": 98, "len": 20})
     calc_acreage: Decimal = field(
-        metadata={"start": 118, "len": 9}
+        metadata={"start": 118, "len": 9, "numfmt":"5.4"}
     )  # , 3, "5.4")  # formatted as 12345(.)6789
     additional_lots: str = field(metadata={"start": 127, "len": 20})
     additional_lots2: str = field(metadata={"start": 147, "len": 20})
@@ -36,7 +35,7 @@ class MODIVRecord:
     deed_page: str = field(metadata={"start": 300, "len": 5})
     sales_price_code: str = field(metadata={"start": 305, "len": 1})
     sale_date: str = field(
-        metadata={"start": 306, "len": 6, "datefmt": "YYMMDD"}
+        metadata={"start": 306, "len": 6, "datefmt": "MMDDYY"}
     )  # , 2)
     sale_price: int = field(metadata={"start": 312, "len": 9})  # , 1)
     sale_assessment: int = field(metadata={"start": 321, "len": 9})  # , 1)
@@ -53,10 +52,10 @@ class MODIVRecord:
     exempt_use: str = field(metadata={"start": 361, "len": 2})
     exempt_desc: str = field(metadata={"start": 363, "len": 3})
     exempt_initial_date: str = field(
-        metadata={"start": 366, "len": 6, "datefmt": "YYMMDD"}
+        metadata={"start": 366, "len": 6, "datefmt": "MMDDYY"}
     )  # , 2)
     exempt_further_date: str = field(
-        metadata={"start": 372, "len": 6, "datefmt": "YYMMDD"}
+        metadata={"start": 372, "len": 6, "datefmt": "MMDDYY"}
     )  # , 2)
     exempt_statute: str = field(metadata={"start": 378, "len": 12})
     exempt_facility: str = field(metadata={"start": 390, "len": 20})
@@ -92,32 +91,59 @@ class MODIVRecord:
     property_flags: str = field(metadata={"start": 562, "len": 10})
     tenant_response: str = field(metadata={"start": 572, "len": 1})
     tenant_base_year: str = field(metadata={"start": 573, "len": 4})
-    tenant_base_tax: Decimal = field(metadata={"start": 577, "len": 9})  # , 3, "7.2")
+    tenant_base_tax: Decimal = field(metadata={"start": 577, "len": 9, "numfmt": "7.2"})  # , 3, "7.2")
     tenant_base_net_val: int = field(metadata={"start": 586, "len": 9})  # , 1)
-    taxes_last_year: Decimal = field(metadata={"start": 600, "len": 9})  # , 3, "7.2")
+    taxes_last_year: Decimal = field(metadata={"start": 600, "len": 9, "numfmt": "7.2"})  # , 3, "7.2")
     taxes_current_year: Decimal = field(
-        metadata={"start": 609, "len": 9}
+        metadata={"start": 609, "len": 9, "numfmt": "7.2"}
     )  # , 3, "7.2")
     non_municipal_half1: Decimal = field(
-        metadata={"start": 618, "len": 9}
+        metadata={"start": 618, "len": 9, "numfmt": "7.2"}
     )  # , 3, "7.2")
     non_municipal_half2: Decimal = field(
-        metadata={"start": 627, "len": 9}
+        metadata={"start": 627, "len": 9, "numfmt": "7.2"}
     )  # , 3, "7.2")
-    municipal_half1: Decimal = field(metadata={"start": 636, "len": 9})  # , 3, "7.2")
-    municipal_half2: Decimal = field(metadata={"start": 645, "len": 9})  # , 3, "7.2")
+    municipal_half1: Decimal = field(metadata={"start": 636, "len": 9, "numfmt": "7.2"})  # , 3, "7.2")
+    municipal_half2: Decimal = field(metadata={"start": 645, "len": 9, "numfmt": "7.2"})  # , 3, "7.2")
     non_municipal_half3: Decimal = field(
-        metadata={"start": 654, "len": 9}
+        metadata={"start": 654, "len": 9, "numfmt": "7.2"}
     )  # , 3, "7.2")
-    municipal_half3: Decimal = field(metadata={"start": 663, "len": 9})  # , 3, "7.2")
+    municipal_half3: Decimal = field(metadata={"start": 663, "len": 9, "numfmt": "7.2"})  # , 3, "7.2")
     bill_status_flag: str = field(metadata={"start": 672, "len": 1})
     tax_estimated_qtr3: Decimal = field(
-        metadata={"start": 673, "len": 9}
+        metadata={"start": 673, "len": 9, "numfmt": "7.2"}
     )  # , 3, "7.2")
     net_value_prior_year: int = field(metadata={"start": 682, "len": 9})  # , 1)
-    statement_aid_amt: Decimal = field(metadata={"start": 691, "len": 9})  # , 3, "7.2")
+    statement_aid_amt: Decimal = field(metadata={"start": 691, "len": 9, "numfmt": "7.2"})  # , 3, "7.2")
+    pams_pin: str = None
+
+    def formatBlockLot(self, value: str) -> str:
+        # always strip spaces from parts
+        if len(value) < 9:
+            return value.lstrip("0")
+        first = value[:5].strip().lstrip("0")
+        second = value[-4:].strip()
+        if second == "0":
+            second = ""
+        if second == "":
+            return first
+        elif first.isalpha() and second.isalpha() and len(second) == 4:
+            return value.lstrip("0") # return the value without the leading zeros
+        else: # first.isalpha() and second.isalpha() and len(second) < 4:
+            return ".".join([first, second]) # return the value without the leading zeros
 
     def __post_init__(self):
+        self.block = self.formatBlockLot(self.block)
+        self.lot = self.formatBlockLot(self.lot)
         self.pams_pin = "_".join(
             filter(None, (self.muncode, self.block, self.lot, self.qual))
         )
+
+    def as_dict(self, keep_keys: list = []):
+        if keep_keys:
+            reduced = {
+                k: getattr(self, k) for k in keep_keys if k in self.__dataclass_fields__
+            }
+            return reduced
+        else:
+            return asdict(self)

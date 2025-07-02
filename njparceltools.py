@@ -120,4 +120,6 @@ if __name__ == "__main__":
                 csvw.writeheader()
             for line in infile.readlines():
                 parsed_data = parse_line(line, parser_class).as_dict(header_row)
+                if args.source:
+                    parsed_data["source"] = args.source
                 csvw.writerow(parsed_data)
